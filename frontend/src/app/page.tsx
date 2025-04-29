@@ -4,8 +4,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useAudio } from "@/hooks/useAudio";
 import { Mic, Send } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Message = {
   id: string;
@@ -14,6 +15,15 @@ type Message = {
 };
 
 export default function Home() {
+  const {
+    transcript,
+    listening,
+    startListening,
+    stopListening,
+    error,
+    resetTranscript,
+  } = useAudio();
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -23,7 +33,11 @@ export default function Home() {
     },
   ]);
   const [input, setInput] = useState("");
-  const [isListening, setIsListening] = useState(false);
+
+  // Atualiza o input com a transcrição em tempo real
+  useEffect(() => {
+    setInput(transcript);
+  }, [transcript]);
 
   const handleSendMessage = () => {
     if (!input.trim()) return;
@@ -37,8 +51,9 @@ export default function Home() {
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    resetTranscript();
 
-    // Simula resposta da IA (vai chamar a API)
+    // Simula resposta da IA
     setTimeout(() => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -58,8 +73,16 @@ export default function Home() {
   };
 
   const toggleMicrophone = () => {
-    setIsListening(!isListening);
-    // aqui será integrado com a API de reconhecimento de voz
+    if (listening) {
+      stopListening();
+      // Se houver transcrição, coloca no input
+      if (transcript) {
+        setInput(transcript);
+      }
+    } else {
+      resetTranscript();
+      startListening();
+    }
   };
 
   return (
@@ -103,20 +126,23 @@ export default function Home() {
             ))}
           </CardContent>
           <div className="p-4 border-t">
+            {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
             <div className="flex items-center space-x-2">
               <Button
-                variant={isListening ? "destructive" : "outline"}
+                variant={listening ? "destructive" : "outline"}
                 size="icon"
                 onClick={toggleMicrophone}
                 className="rounded-full"
               >
-                <Mic className={isListening ? "animate-pulse" : ""} />
+                <Mic className={listening ? "animate-pulse" : ""} />
               </Button>
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Pergunte sobre livros..."
+                placeholder={
+                  listening ? "Ouvindo..." : "Pergunte sobre livros..."
+                }
                 className="flex-1"
               />
               <Button
