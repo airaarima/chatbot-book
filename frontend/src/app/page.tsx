@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAudio } from "@/hooks/useAudio";
 import { Mic, Send } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Message = {
   id: string;
@@ -34,10 +34,22 @@ export default function Home() {
   ]);
   const [input, setInput] = useState("");
 
+  // Referência para o container das mensagens
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   // Atualiza o input com a transcrição em tempo real
   useEffect(() => {
     setInput(transcript);
   }, [transcript]);
+
+  // Efeito para scroll automático quando novas mensagens são adicionadas
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const handleSendMessage = () => {
     if (!input.trim()) return;
@@ -124,6 +136,8 @@ export default function Home() {
                 </div>
               </div>
             ))}
+            {/* Elemento invisível para scroll automático */}
+            <div ref={messagesEndRef} />
           </CardContent>
           <div className="p-4 border-t">
             {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
