@@ -1,0 +1,5 @@
+root = true # Define o root (raiz da pasta) que vai aplicar as regras
+
+[*] # tipo de arquivo afetado pelas regras abaixo, ex: [.js]
+indent_style = space
+indent_size = 2
