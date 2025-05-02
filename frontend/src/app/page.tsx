@@ -51,7 +51,7 @@ export default function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!input.trim()) return;
 
     // Add user message
@@ -65,17 +65,42 @@ export default function Home() {
     setInput("");
     resetTranscript();
 
-    // Simula resposta da IA
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content:
-          "Obrigado pela sua mensagem sobre livros! Em uma implementação real, eu responderia com informações literárias relevantes.",
-        role: "assistant",
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-    }, 1000);
-  };
+   // 🔄 SUBSTITUIÇÃO DO setTimeout PELA CHAMADA REAL À API
+   try {
+    const response = await fetch("http://localhost:3030/api/message", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // 🔁 Enviando a mensagem do usuário para o back-end
+      body: JSON.stringify({ pergunta: userMessage.content }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Erro ao buscar resposta do servidor.");
+    }
+
+    const data = await response.json();
+
+    const aiMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      // 🧠 Aqui estou assumindo que a resposta vem em `data.resposta`
+      content: data.resposta || "Desculpe, não consegui entender sua pergunta.",
+      role: "assistant",
+    };
+
+    setMessages((prev) => [...prev, aiMessage]);
+  } catch (err) {
+    // ⚠️ Em caso de erro, adiciona uma mensagem de erro como resposta
+    const errorMessage: Message = {
+      id: (Date.now() + 2).toString(),
+      content: "Erro ao se comunicar com o servidor. Tente novamente.",
+      role: "assistant",
+    };
+    setMessages((prev) => [...prev, errorMessage]);
+  }
+  // 🔚 FIM DA MODIFICAÇÃO
+};
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
