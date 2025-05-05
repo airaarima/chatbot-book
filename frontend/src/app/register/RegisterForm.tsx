@@ -12,18 +12,23 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
+import { messages } from "@/shared/constants/messages";
 import useApiRegister from "@/shared/services/requests/register";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { mutateRegister, error, loading } = useApiRegister();
+  const { mutateRegister, loading } = useApiRegister();
+
+  const router = useRouter();
 
   const {
     register,
@@ -39,9 +44,25 @@ const RegisterForm = () => {
 
     const result = await mutateRegister(payload);
 
-    if (result) {
-      // TODO: retirar logs em breve e adicionar redirecionamento p/ página de login (quando tiver pronta)
-      console.log("Usuário cadastrado com sucesso!");
+    const isSuccess = result === true;
+
+    const toastStyle = {
+      background: isSuccess ? "#dcfce7" : "#fee2e2",
+      color: isSuccess ? "#166534" : "#991b1b",
+    };
+
+    const toastMessage = isSuccess
+      ? messages.success.userCreated
+      : result || messages.error.default;
+
+    toast[isSuccess ? "success" : "error"](toastMessage, {
+      style: toastStyle,
+    });
+
+    console[isSuccess ? "log" : "error"](toastMessage);
+
+    if (isSuccess) {
+      router.push("/login");
     }
   };
 
@@ -148,9 +169,6 @@ const RegisterForm = () => {
               "Cadastrar"
             )}
           </Button>
-          {error && (
-            <p className="text-sm text-red-500 text-center mt-2">{error}</p>
-          )}
         </form>
       </CardContent>
       <CardFooter className="text-sm text-center">
