@@ -1,5 +1,6 @@
 "use client";
 
+import { ChatBookTitle } from "@/components/custom/ChatBookTitle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -126,7 +127,7 @@ export default function Home() {
         <Card className="w-full max-w-3xl h-[80vh] flex flex-col">
           <CardHeader className="border-b">
             <CardTitle className="text-center text-xl">
-              <span className="text-purple-600 font-bold">Chat</span>Book
+              <ChatBookTitle />
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
