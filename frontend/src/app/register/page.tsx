@@ -12,15 +12,18 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import useApiRegister from "@/shared/services/requests/register";
 
-const Register = () => {
+const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const { mutateRegister, error, loading } = useApiRegister();
 
   const {
     register,
@@ -30,9 +33,16 @@ const Register = () => {
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = (data: RegisterFormData) => {
-    console.log("Cadastro com:", data);
-    // Aqui você pode fazer a requisição POST para /register
+  const onSubmit = async (data: RegisterFormData) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { confirmPassword, ...payload } = data;
+
+    const result = await mutateRegister(payload);
+
+    if (result) {
+      // TODO: retirar logs em breve e adicionar redirecionamento p/ página de login (quando tiver pronta)
+      console.log("Usuário cadastrado com sucesso!");
+    }
   };
 
   return (
@@ -137,9 +147,17 @@ const Register = () => {
             <Button
               type="submit"
               className="w-full bg-purple-600 hover:bg-purple-700"
+              disabled={loading}
             >
-              Cadastrar
+              {loading ? (
+                <Loader className="animate-spin w-4 h-4" />
+              ) : (
+                "Cadastrar"
+              )}
             </Button>
+            {error && (
+              <p className="text-sm text-red-500 text-center mt-2">{error}</p>
+            )}
           </form>
         </CardContent>
         <CardFooter className="text-sm text-center">
@@ -156,4 +174,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default RegisterPage;
