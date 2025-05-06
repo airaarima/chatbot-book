@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { messages } from "@/shared/constants/messages";
 import { LOGIN_PAGE } from "@/shared/constants/routes";
+import { toastStyles } from "@/shared/constants/styles";
 import useApiRegister from "@/shared/services/requests/register";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader } from "lucide-react";
@@ -43,28 +44,18 @@ const RegisterForm = () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...payload } = data;
 
-    const result = await mutateRegister(payload);
-
-    const isSuccess = result === true;
-
-    const toastStyle = {
-      background: isSuccess ? "#dcfce7" : "#fee2e2",
-      color: isSuccess ? "#166534" : "#991b1b",
-    };
-
-    const toastMessage = isSuccess
-      ? messages.success.userCreated
-      : result || messages.error.default;
-
-    toast[isSuccess ? "success" : "error"](toastMessage, {
-      style: toastStyle,
-    });
-
-    console[isSuccess ? "log" : "error"](toastMessage);
-
-    if (isSuccess) {
-      router.push(LOGIN_PAGE);
-    }
+    await mutateRegister(
+      payload,
+      (errorMessage) => {
+        toast.error(errorMessage, toastStyles.error);
+        console.error(errorMessage);
+      },
+      () => {
+        toast.success(messages.success.userCreated, toastStyles.success);
+        console.log(messages.success.userCreated);
+        router.push(LOGIN_PAGE);
+      },
+    );
   };
 
   return (
