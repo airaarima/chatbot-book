@@ -15,7 +15,7 @@ type Message = {
   role: "user" | "assistant";
 };
 
-export default function ChatBook() {
+const ChatBook = () => {
   const {
     transcript,
     listening,
@@ -193,4 +193,6 @@ export default function ChatBook() {
       </div>
     </>
   );
-}
+};
+
+export default ChatBook;
