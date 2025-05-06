@@ -1,16 +1,11 @@
 import { z } from "zod";
+import { emailField, nameField, passwordField } from "./fields";
 
 export const registerSchema = z
   .object({
-    name: z.string().min(1, "Nome é obrigatório"),
-    email: z.string().min(1, "E-mail é obrigatório").email("E-mail inválido"),
-    password: z
-      .string()
-      .min(6, "A senha deve ter no mínimo 6 caracteres")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d])/,
-        "A senha deve conter letras maiúsculas, minúsculas, números e caracteres especiais",
-      ),
+    name: nameField,
+    email: emailField,
+    password: passwordField,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
