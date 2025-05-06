@@ -5,6 +5,8 @@ import cors from "cors";
 import userController from "./controllers/userController";
 import groqController from "./controllers/groqController";
 import { AppDataSource } from "./database/data-source";
+import { validateDto } from './middlewares/validateDto';
+import { CreateUserDto } from './dtos/createUserDto';
 
 dotenv.config();
 const app = express();
@@ -16,7 +18,7 @@ const PORT = process.env.PORT;
 
 app.post(`${route}/message`, groqController.sendMessage);
 
-app.post(`${route}/register`, userController.registerUser)
+app.post(`${route}/register`, validateDto(CreateUserDto), userController.registerUser)
 
 AppDataSource.initialize()
   .then(() => {
