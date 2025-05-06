@@ -1,200 +1,137 @@
 "use client";
 
 import { ChatBookTitle } from "@/components/custom/ChatBookTitle";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useAudio } from "@/hooks/useAudio";
-import { Mic, Send } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { LoginFormData, loginSchema } from "@/schemas/loginSchema";
+import { messages } from "@/shared/constants/messages";
+import { CHAT_PAGE, REGISTER_PAGE } from "@/shared/constants/routes";
+import { toastStyles } from "@/shared/constants/styles";
+import useApiLogin from "@/shared/services/requests/login";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff, Loader } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
-type Message = {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-};
+const Login = () => {
+  const [showPassword, setShowPassword] = useState(false);
 
-export default function Home() {
+  const { mutateLogin, loading } = useApiLogin();
+
+  const router = useRouter();
+
   const {
-    transcript,
-    listening,
-    startListening,
-    stopListening,
-    error,
-    resetTranscript,
-  } = useAudio();
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content:
-        "Olá! Sou seu assistente literário. Como posso ajudar você com livros hoje?",
-      role: "assistant",
-    },
-  ]);
-  const [input, setInput] = useState("");
-
-  // Referência para o container das mensagens
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Atualiza o input com a transcrição em tempo real
-  useEffect(() => {
-    setInput(transcript);
-  }, [transcript]);
-
-  // Efeito para scroll automático quando novas mensagens são adicionadas
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const handleSendMessage = async () => {
-    if (!input.trim()) return;
-
-    // Add user message
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: input,
-      role: "user",
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    resetTranscript();
-
-    // 🔄CHAMADA REAL À API
-    try {
-      const response = await fetch("http://localhost:3030/api/message", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // 🔁 Enviando a mensagem do usuário para o back-end
-        body: JSON.stringify({ pergunta: userMessage.content }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao buscar resposta do servidor.");
-      }
-
-      const data = await response.json();
-
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content:
-          data.resposta || "Desculpe, não consegui entender sua pergunta.",
-        role: "assistant",
-      };
-
-      setMessages((prev) => [...prev, aiMessage]);
-    } catch (err) {
-      const errorMessage: Message = {
-        id: (Date.now() + 2).toString(),
-        content: "Erro ao se comunicar com o servidor. Tente novamente.",
-        role: "assistant",
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const toggleMicrophone = () => {
-    if (listening) {
-      stopListening();
-      // Se houver transcrição, coloca no input
-      if (transcript) {
-        setInput(transcript);
-      }
-    } else {
-      resetTranscript();
-      startListening();
-    }
+  const onSubmit = async (data: LoginFormData) => {
+    await mutateLogin(
+      data,
+      (errorMessage) => {
+        toast.error(errorMessage || messages.error.default, toastStyles.error);
+      },
+      () => {
+        router.push(CHAT_PAGE);
+      },
+    );
   };
 
   return (
-    <>
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
-        <Card className="w-full max-w-3xl h-[80vh] flex flex-col">
-          <CardHeader className="border-b">
-            <CardTitle className="text-center text-xl">
-              <ChatBookTitle />
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div className="flex items-start max-w-[80%]">
-                  {message.role === "assistant" && (
-                    <Avatar className="h-8 w-8 mr-2 bg-purple-600">
-                      <AvatarImage src="image.png" />
-                      <AvatarFallback>AI</AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div
-                    className={`p-3 rounded-lg ${
-                      message.role === "user"
-                        ? "bg-purple-600 text-white rounded-br-none"
-                        : "bg-gray-200 text-gray-800 rounded-bl-none"
-                    }`}
-                  >
-                    {message.content}
-                  </div>
-                  {message.role === "user" && (
-                    <Avatar className="h-8 w-8 ml-2 bg-gray-400">
-                      <span className="text-xs font-bold text-white">EU</span>
-                    </Avatar>
-                  )}
-                </div>
-              </div>
-            ))}
-            {/* Elemento invisível para scroll automático */}
-            <div ref={messagesEndRef} />
-          </CardContent>
-          <div className="p-4 border-t">
-            {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
-            <div className="flex items-center space-x-2">
-              <Button
-                variant={listening ? "destructive" : "outline"}
-                size="icon"
-                onClick={toggleMicrophone}
-                className="rounded-full"
-              >
-                <Mic className={listening ? "animate-pulse" : ""} />
-              </Button>
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">
+            <ChatBookTitle />
+          </CardTitle>
+          <CardDescription className="text-center">
+            Entre com suas credenciais para acessar sua conta
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium">
+                E-mail
+              </label>
               <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={
-                  listening ? "Ouvindo..." : "Pergunte sobre livros..."
-                }
-                className="flex-1"
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                {...register("email")}
               />
-              <Button
-                onClick={handleSendMessage}
-                disabled={!input.trim()}
-                size="icon"
-                className="rounded-full bg-purple-600 hover:bg-purple-700"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email.message}</p>
+              )}
             </div>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium">
+                Senha
+              </label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  {...register("password")}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 text-gray-400"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </Button>
+              </div>
+              {errors.password && (
+                <p className="text-red-500 text-sm">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-purple-600 hover:bg-purple-700"
+            >
+              {loading ? <Loader className="animate-spin w-4 h-4" /> : "Entrar"}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-4">
+          <div className="text-sm text-center text-gray-500">
+            <Link href="#" className="text-purple-600 hover:underline">
+              Esqueceu sua senha?
+            </Link>
           </div>
-        </Card>
-      </div>
-    </>
+          <div className="text-sm text-center">
+            Não tem uma conta?{" "}
+            <Link
+              href={REGISTER_PAGE}
+              className="text-purple-600 font-semibold hover:underline"
+            >
+              Cadastre-se
+            </Link>
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
   );
-}
+};
+
+export default Login;
