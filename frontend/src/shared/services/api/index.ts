@@ -1,3 +1,4 @@
+import { LOGIN_PAGE } from "@/shared/constants/routes";
 import axios, {
   AxiosInstance,
   AxiosResponse,
@@ -6,7 +7,6 @@ import axios, {
 
 export const v1 = "/api/v1";
 
-// const API_URL = process.env.API_URL as string; // TODO: em breve alterarei isso
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const TOKEN_KEY = "@chat-book";
@@ -35,7 +35,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.clear();
-      window.location.href = "/login";
+      window.location.href = LOGIN_PAGE;
     }
     return Promise.reject(error);
   },

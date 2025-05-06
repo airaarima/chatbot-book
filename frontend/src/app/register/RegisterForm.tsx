@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { messages } from "@/shared/constants/messages";
+import { LOGIN_PAGE } from "@/shared/constants/routes";
 import useApiRegister from "@/shared/services/requests/register";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader } from "lucide-react";
@@ -62,7 +63,7 @@ const RegisterForm = () => {
     console[isSuccess ? "log" : "error"](toastMessage);
 
     if (isSuccess) {
-      router.push("/login");
+      router.push(LOGIN_PAGE);
     }
   };
 
@@ -174,7 +175,7 @@ const RegisterForm = () => {
       <CardFooter className="text-sm text-center">
         Já tem uma conta?&nbsp;
         <Link
-          href="/login"
+          href={LOGIN_PAGE}
           className="text-purple-600 font-semibold hover:underline"
         >
           Faça login
