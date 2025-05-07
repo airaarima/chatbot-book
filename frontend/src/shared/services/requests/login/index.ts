@@ -1,33 +1,37 @@
-import { useState } from "react";
-import { IRegisterPayload } from "./types";
-import endpoints from "../../api/endpoints";
-import api from "../../api";
 import { messages } from "@/shared/constants/messages";
+import api from "../../api";
+import endpoints from "../../api/endpoints";
+import { ILoginPayload } from "./types";
+import { useState } from "react";
 
-const useApiRegister = () => {
+const useApiLogin = () => {
   const [loading, setLoading] = useState(false);
 
-  const mutateRegister = async (
-    payload: IRegisterPayload,
+  const mutateLogin = async (
+    payload: ILoginPayload,
     onError: (message: string) => void,
     onSuccess: () => void,
   ) => {
     setLoading(true);
 
     try {
-      const response = await api.post(endpoints.register.user(), payload);
-      if (response.status === 201 || response.status === 200) {
+      const response = await api.post(endpoints.login.user(), payload);
+
+      if (response.status === 200 || response.status === 201) {
         onSuccess();
         return true;
       }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       let message = messages.error.default;
+
       if (!err.response) {
         message = messages.error.network;
-      } else if (err.response?.status === 409) {
-        message = messages.error.emailInUse;
+      } else if (err.response?.status === 401) {
+        message = messages.error.invalidCredentials;
       }
+
       onError(message);
       return false;
     } finally {
@@ -35,7 +39,7 @@ const useApiRegister = () => {
     }
   };
 
-  return { mutateRegister, loading };
+  return { mutateLogin, loading };
 };
 
-export default useApiRegister;
+export default useApiLogin;
