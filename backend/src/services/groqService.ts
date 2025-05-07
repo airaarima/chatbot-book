@@ -1,7 +1,8 @@
-import dotenv from "dotenv";
-import Groq from "groq-sdk";
 import fs from "fs";
 import path from "path";
+
+import dotenv from "dotenv";
+import Groq from "groq-sdk";
 
 dotenv.config();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -12,7 +13,6 @@ const livroMarkdown = fs.readFileSync(path.resolve(__dirname, "../contextos/livr
 export async function getGroqChatCompletion(message: string) {
   console.log("Message received by getGroqChatCompletion:", message);
   return groq.chat.completions.create({
-    
     messages: [
       {
         role: "user",
@@ -31,7 +31,6 @@ que é o conteúdo do livro em questão:
 ${livroMarkdown}
 `,
       },
-
 
       {
         role: "system",
