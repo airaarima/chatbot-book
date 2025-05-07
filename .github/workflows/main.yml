@@ -1,0 +1,59 @@
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+
+jobs:
+  backend:
+    name: 🚀 Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build & Type‑check
+        run: npm run build
+      - name: Run tests
+        run: npm test
+
+  frontend:
+    name: 🌐 Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint & Build
+        run: |
+          npm run lint:check
+          npm run build
+      - name: Run tests
+        run: npm test
