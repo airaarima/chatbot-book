@@ -1,4 +1,5 @@
 import { RequestHandler } from "express";
+
 import userService from "../services/userService";
 
 const registerUser: RequestHandler = async (req, res, next) => {
@@ -10,4 +11,4 @@ const registerUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { registerUser }
+export default { registerUser };

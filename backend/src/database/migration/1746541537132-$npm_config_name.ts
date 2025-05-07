@@ -20,14 +20,14 @@ export class $npmConfigName1746540747927 implements MigrationInterface {
           {
             name: "email",
             type: "varchar(200)",
-            isUnique: true
+            isUnique: true,
           },
           {
             name: "password",
             type: "varchar(200)",
           },
         ],
-      })
+      }),
     );
   }
 
