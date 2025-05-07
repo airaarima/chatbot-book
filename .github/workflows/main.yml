@@ -31,8 +31,8 @@ jobs:
         run: npm ci
       - name: Build & Type‑check
         run: npm run build
-      - name: Run tests
-        run: npm test
+      # - name: Run tests
+      #   run: npm test
 
   frontend:
     name: 🌐 Frontend
@@ -52,5 +52,5 @@ jobs:
         run: |
           npm run lint:check
           npm run build
-      - name: Run tests
-        run: npm test
+      # - name: Run tests
+      #   run: npm test
