@@ -64,12 +64,12 @@ const ChatBook = () => {
 
     try {
       // TODO: passar para o hook e utilizar axios
-      const response = await fetch("http://localhost:3030/api/message", {
+      const response = await fetch("http://localhost:3030/api/v1/message", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ pergunta: userMessage.content }),
+        body: JSON.stringify({ message: userMessage.content }),
       });
 
       if (!response.ok) {
