@@ -1,7 +1,8 @@
 import { RequestHandler } from "express";
+
 import { getGroqChatCompletion } from "../services/groqService";
 
-const sendMessage: RequestHandler = async (req, res, next) => {
+const sendMessage: RequestHandler = async (req, res) => {
   try {
     const userMessage = req.body.message;
     const reply = await getGroqChatCompletion(userMessage);
@@ -12,4 +13,4 @@ const sendMessage: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { sendMessage }
+export default { sendMessage };
