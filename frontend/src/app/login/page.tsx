@@ -1,5 +1,6 @@
 "use client";
 
+import { AboutButton } from "@/components/custom/AboutButton";
 import { ChatBookTitle } from "@/components/custom/ChatBookTitle";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,6 +54,8 @@ const Login = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+      <AboutButton />
+
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">
