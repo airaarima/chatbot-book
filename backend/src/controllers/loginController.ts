@@ -1,4 +1,5 @@
 import { RequestHandler } from "express";
+
 import userService from "../services/loginService";
 
 const loginUser: RequestHandler = async (req, res, next) => {
