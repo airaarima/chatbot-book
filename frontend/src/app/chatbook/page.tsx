@@ -60,16 +60,14 @@ const ChatBook = () => {
     };
 
     const sendMessage: ISendMessage = {
-      message: userMessage.content
-    }
+      message: userMessage.content,
+    };
 
     setCommunications((prev) => [...prev, userMessage]);
     setInput("");
     resetTranscript();
 
-    const response = await mutateChat(
-      sendMessage, 
-      (errorMessage) => {
+    const response = await mutateChat(sendMessage, (errorMessage) => {
       toast.error(errorMessage || messages.error.default, toastStyles.error);
     });
 
@@ -163,7 +161,11 @@ const ChatBook = () => {
                 size="icon"
                 className="rounded-full bg-purple-600 hover:bg-purple-700"
               >
-                {loading ? <Loader className="animate-spin w-4 h-4" /> : <Send className="h-4 w-4" />}
+                {loading ? (
+                  <Loader className="animate-spin w-4 h-4" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>
