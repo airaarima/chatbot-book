@@ -6,14 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAudio } from "@/hooks/useAudio";
-import { Mic, Send } from "lucide-react";
+import { toastStyles } from "@/shared/constants/styles";
+import useApiChatBook from "@/shared/services/requests/chat";
+import { IMessage, ISendMessage } from "@/shared/services/requests/chat/types";
+import { Loader, Mic, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-
-type Message = {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-};
+import { toast } from "sonner";
+import { messages } from "@/shared/constants/messages";
 
 const ChatBook = () => {
   const {
@@ -25,7 +24,7 @@ const ChatBook = () => {
     resetTranscript,
   } = useAudio();
 
-  const [messages, setMessages] = useState<Message[]>([
+  const [communications, setCommunications] = useState<IMessage[]>([
     {
       id: "1",
       content:
@@ -35,6 +34,8 @@ const ChatBook = () => {
   ]);
   const [input, setInput] = useState("");
 
+  const { mutateChat, loading } = useApiChatBook();
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,7 +44,7 @@ const ChatBook = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [communications]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -52,50 +53,27 @@ const ChatBook = () => {
   const handleSendMessage = async () => {
     if (!input.trim()) return;
 
-    const userMessage: Message = {
+    const userMessage: IMessage = {
       id: Date.now().toString(),
       content: input,
       role: "user",
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const sendMessage: ISendMessage = {
+      message: userMessage.content
+    }
+
+    setCommunications((prev) => [...prev, userMessage]);
     setInput("");
     resetTranscript();
 
-    try {
-      // TODO: passar para o hook e utilizar axios
-      const response = await fetch("http://localhost:3030/api/v1/message", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: userMessage.content }),
-      });
+    const response = await mutateChat(
+      sendMessage, 
+      (errorMessage) => {
+      toast.error(errorMessage || messages.error.default, toastStyles.error);
+    });
 
-      if (!response.ok) {
-        throw new Error("Erro ao buscar resposta do servidor.");
-      }
-
-      const data = await response.json();
-
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content:
-          data.resposta || "Desculpe, não consegui entender sua pergunta.",
-        role: "assistant",
-      };
-
-      setMessages((prev) => [...prev, aiMessage]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      const errorMessage: Message = {
-        id: (Date.now() + 2).toString(),
-        content: "Erro ao se comunicar com o servidor. Tente novamente.",
-        role: "assistant",
-      };
-      console.error("Error:", err);
-      setMessages((prev) => [...prev, errorMessage]);
-    }
+    if (response) setCommunications((prev) => [...prev, response]);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -127,13 +105,13 @@ const ChatBook = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
+            {communications.map((comunication) => (
               <div
-                key={message.id}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                key={comunication.id}
+                className={`flex ${comunication.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div className="flex items-start max-w-[80%]">
-                  {message.role === "assistant" && (
+                  {comunication.role === "assistant" && (
                     <Avatar className="h-8 w-8 mr-2 bg-purple-600">
                       <AvatarImage src="image.png" />
                       <AvatarFallback>AI</AvatarFallback>
@@ -141,14 +119,14 @@ const ChatBook = () => {
                   )}
                   <div
                     className={`p-3 rounded-lg ${
-                      message.role === "user"
+                      comunication.role === "user"
                         ? "bg-purple-600 text-white rounded-br-none"
                         : "bg-gray-200 text-gray-800 rounded-bl-none"
                     }`}
                   >
-                    {message.content}
+                    {comunication.content}
                   </div>
-                  {message.role === "user" && (
+                  {comunication.role === "user" && (
                     <Avatar className="h-8 w-8 ml-2 bg-gray-400">
                       <span className="text-xs font-bold text-white">EU</span>
                     </Avatar>
@@ -185,7 +163,7 @@ const ChatBook = () => {
                 size="icon"
                 className="rounded-full bg-purple-600 hover:bg-purple-700"
               >
-                <Send className="h-4 w-4" />
+                {loading ? <Loader className="animate-spin w-4 h-4" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
           </div>
